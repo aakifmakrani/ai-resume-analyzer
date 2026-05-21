@@ -1,7 +1,15 @@
+import os
+import re
 import streamlit as st
 from google import genai
 from PyPDF2 import PdfReader
-import re
+from dotenv import load_dotenv
+
+# =========================================
+# LOAD ENV
+# =========================================
+
+load_dotenv()
 
 # =========================================
 # PAGE CONFIG
@@ -9,7 +17,7 @@ import re
 
 st.set_page_config(
     page_title="AI Resume Analyzer",
-    page_icon="🚀",
+    page_icon="📄",
     layout="wide"
 )
 
@@ -20,122 +28,127 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 html, body, [class*="css"] {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
-.main {
-    background-color: #0E1117;
-    color: white;
+.stApp {
+    background-color: #F5F7FB;
 }
 
-h1 {
-    text-align: center;
-    color: #00C6FF;
-    font-size: 55px;
-    font-weight: bold;
+/* Hide Streamlit Branding */
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Main Layout */
+
+.block-container {
+    padding-top: 2rem;
+    max-width: 1350px;
 }
 
-h2, h3 {
-    color: #00C6FF;
-}
+/* Buttons */
 
-.stButton>button {
+.stButton > button {
     width: 100%;
-    background: linear-gradient(to right, #00c6ff, #0072ff);
-    color: white;
-    border-radius: 14px;
-    height: 3.2em;
-    font-size: 18px;
-    font-weight: bold;
+    height: 3.5em;
+    border-radius: 16px;
     border: none;
+    background: linear-gradient(to right, #4F46E5, #7C3AED);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
     transition: 0.3s;
 }
 
-.stButton>button:hover {
-    transform: scale(1.02);
-    background: linear-gradient(to right, #0072ff, #00c6ff);
+.stButton > button:hover {
+    transform: translateY(-2px);
 }
 
-.metric-card {
-    background: #161B22;
-    padding: 20px;
+/* File Uploader */
+
+[data-testid="stFileUploader"] {
+    background: white;
+    border: 2px dashed #D1D5DB;
     border-radius: 20px;
-    text-align: center;
-    box-shadow: 0px 0px 20px rgba(0,198,255,0.2);
+    padding: 20px;
 }
 
-.sidebar .sidebar-content {
-    background-color: #111827;
+/* Metric Card */
+
+[data-testid="metric-container"] {
+    background: white;
+    border-radius: 24px;
+    padding: 25px;
+    border: 1px solid #ECECEC;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+}
+
+/* Tabs */
+
+.stTabs [data-baseweb="tab"] {
+    background: white;
+    border-radius: 14px;
+    padding: 10px 22px;
+    border: 1px solid #ECECEC;
+    margin-right: 10px;
+}
+
+/* Cards */
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 28px;
+    border: 1px solid #ECECEC;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+}
+
+.hero-title {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    color: #111827;
+}
+
+.hero-gradient {
+    background: linear-gradient(to right, #4F46E5, #7C3AED);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+    color: #6B7280;
+    font-size: 19px;
+    margin-top: 15px;
+    line-height: 1.7;
+}
+
+.small-title {
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.result-box {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    border: 1px solid #ECECEC;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # =========================================
-# HEADER
-# =========================================
-
-st.title("🚀 AI Resume Analyzer")
-
-st.markdown("""
-<center>
-Analyze resumes using Gemini AI and improve ATS performance.
-</center>
-""", unsafe_allow_html=True)
-
-st.divider()
-
-# =========================================
-# SIDEBAR
-# =========================================
-
-with st.sidebar:
-
-    st.header("⚡ About Project")
-
-    st.write("""
-    This AI Resume Analyzer helps users:
-
-    ✅ Analyze ATS performance  
-    ✅ Detect missing skills  
-    ✅ Improve resume quality  
-    ✅ Get role recommendations  
-    ✅ Generate AI summaries  
-    """)
-
-    st.divider()
-
-    st.subheader("🛠 Tech Stack")
-
-    st.write("""
-    - Python  
-    - Streamlit  
-    - Gemini AI  
-    - NLP  
-    - PyPDF2  
-    """)
-
-    st.divider()
-
-    st.success("👨‍💻 Developed by Aakif Makrani")
-
-# =========================================
-# INPUTS
-# =========================================
-
-api_key = st.text_input(
-    "🔑 Enter Gemini API Key",
-    type="password"
-)
-
-uploaded_file = st.file_uploader(
-    "📄 Upload Resume PDF",
-    type=["pdf"]
-)
-
-# =========================================
-# PDF EXTRACTION
+# FUNCTIONS
 # =========================================
 
 def extract_text(file):
@@ -153,42 +166,115 @@ def extract_text(file):
 
     return text
 
-# =========================================
-# EXTRACT ATS SCORE
-# =========================================
 
 def extract_score(text):
 
-    match = re.search(r'(\d{1,3})/100', text)
+    match = re.search(r'(\\d{1,3})/100', text)
 
     if match:
         return int(match.group(1))
 
-    return 65
+    return 72
 
 # =========================================
-# ANALYZE BUTTON
+# HERO SECTION
 # =========================================
 
-if st.button("🚀 Analyze Resume"):
+st.markdown("""
+<div class="card">
 
-    if not api_key:
+<div class="small-title">
+AI Powered Resume Intelligence
+</div>
 
-        st.error("Please enter Gemini API Key.")
+<div class="hero-title">
+Optimize Your <span class="hero-gradient">Resume</span>
+</div>
 
-    elif not uploaded_file:
+<div class="hero-sub">
+Get ATS insights, recruiter-style analysis,
+missing skills detection, and AI-powered
+career recommendations using Gemini AI.
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
+st.write("")
+st.write("")
+
+# =========================================
+# MAIN GRID
+# =========================================
+
+left, right = st.columns([1.2, 0.8])
+
+# =========================================
+# LEFT PANEL
+# =========================================
+
+with left:
+
+    st.markdown("""
+    <div class="card">
+    <div class="small-title">
+    Upload Resume
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    uploaded_file = st.file_uploader(
+        "Upload Resume PDF",
+        type=["pdf"]
+    )
+
+    analyze = st.button("Analyze Resume")
+
+# =========================================
+# RIGHT PANEL
+# =========================================
+
+with right:
+
+    st.markdown("""
+    <div class="card">
+
+    <div class="small-title">
+    ATS Intelligence
+    </div>
+
+    ### AI Recruiter Dashboard
+
+    - ATS Optimization Analysis  
+    - Missing Skills Detection  
+    - Resume Improvements  
+    - Technical Skill Evaluation  
+    - Recruiter-Level Feedback  
+
+    </div>
+    """, unsafe_allow_html=True)
+
+# =========================================
+# ANALYSIS
+# =========================================
+
+if analyze:
+
+    if not uploaded_file:
 
         st.error("Please upload resume PDF.")
 
     else:
 
-        with st.spinner("🤖 AI is analyzing your resume..."):
+        with st.spinner("Analyzing resume using Gemini AI..."):
 
             try:
 
                 resume_text = extract_text(uploaded_file)
 
-                client = genai.Client(api_key=api_key)
+                client = genai.Client(
+                    api_key=os.getenv("GEMINI_API_KEY")
+                )
 
                 prompt = f"""
                 You are an advanced ATS Resume Analyzer.
@@ -225,48 +311,50 @@ if st.button("🚀 Analyze Resume"):
 
                 result = response.text
 
-                # =========================================
-                # ATS SCORE
-                # =========================================
-
                 score = extract_score(result)
 
-                st.success("✅ Resume Analysis Complete!")
+                st.write("")
+                st.write("")
 
-                st.subheader("🎯 ATS SCORE")
+                # =========================================
+                # SCORE SECTION
+                # =========================================
 
-                col1, col2 = st.columns([1,3])
+                score1, score2 = st.columns([1, 2])
 
-                with col1:
+                with score1:
 
-                    st.markdown(f"""
-                    <div class="metric-card">
-                        <h1>{score}</h1>
-                        <h3>/100</h3>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    st.metric(
+                        label="ATS SCORE",
+                        value=f"{score}/100"
+                    )
 
-                with col2:
+                with score2:
+
+                    st.markdown("""
+                    ### Resume Performance
+                    """)
 
                     st.progress(score)
 
                     if score >= 80:
-                        st.success("Excellent Resume!")
+                        st.success("Excellent ATS optimization detected.")
                     elif score >= 60:
-                        st.warning("Good Resume, but can improve.")
+                        st.warning("Good resume with improvement opportunities.")
                     else:
-                        st.error("Resume needs significant improvement.")
+                        st.error("Resume requires significant optimization.")
 
-                st.divider()
+                st.write("")
+                st.write("")
 
                 # =========================================
-                # RESULT TABS
+                # TABS
                 # =========================================
 
                 tab1, tab2, tab3 = st.tabs([
-                    "📌 Full Analysis",
-                    "📈 Resume Insights",
-                    "💡 Recommendations"
+                    "Full Analysis",
+                    "Resume Insights",
+                    "Recommendations"
                 ])
 
                 with tab1:
@@ -276,24 +364,26 @@ if st.button("🚀 Analyze Resume"):
                 with tab2:
 
                     st.info("""
-                    AI detected:
-                    - Resume structure quality
-                    - Technical skill alignment
-                    - ATS keyword relevance
-                    - Career suitability
-                    """)
+AI detected:
+
+• Resume structure quality  
+• ATS keyword relevance  
+• Technical skill alignment  
+• Career suitability  
+• Hiring optimization insights  
+""")
 
                 with tab3:
 
                     st.success("""
-                    Recommended next steps:
+Recommended Improvements:
 
-                    ✅ Add more projects  
-                    ✅ Add measurable achievements  
-                    ✅ Improve technical stack  
-                    ✅ Add GitHub portfolio  
-                    ✅ Add deployment links  
-                    """)
+• Add measurable achievements  
+• Improve technical stack visibility  
+• Add deployed projects  
+• Include GitHub portfolio  
+• Optimize ATS keywords  
+""")
 
             except Exception as e:
 
