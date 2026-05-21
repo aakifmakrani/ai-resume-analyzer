@@ -6,12 +6,13 @@ An AI-powered ATS Resume Analyzer built using Streamlit and Gemini AI.
 
 ## 🔥 Features
 
-- ATS Resume Score
-- Resume Strength Analysis
+- ATS Resume Score Analysis
 - Missing Skills Detection
-- Resume Improvement Suggestions
-- AI-Powered Professional Summary
-- Best Job Role Recommendations
+- Resume Strength Evaluation
+- AI-Powered Resume Recommendations
+- Recruiter-Level ATS Insights
+- Professional Summary Generation
+- Best Job Role Suggestions
 
 ---
 
@@ -25,7 +26,7 @@ An AI-powered ATS Resume Analyzer built using Streamlit and Gemini AI.
 
 ---
 
-## 📸 S## Screenshots
+## 📸 Screenshots
 
 ### Hero Section
 
@@ -47,11 +48,13 @@ An AI-powered ATS Resume Analyzer built using Streamlit and Gemini AI.
 
 ## ⚡ Installation
 
+Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-Run project:
+Run the application:
 
 ```bash
 python -m streamlit run app.py
@@ -61,7 +64,7 @@ python -m streamlit run app.py
 
 ## 👨‍💻 Developer
 
-Aakif Makrani
+### Aakif Makrani
 
 - LinkedIn:
 https://www.linkedin.com/in/aakif-makrani-6634a9230/
