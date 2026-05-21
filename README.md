@@ -29,19 +29,28 @@ An AI-powered ATS Resume Analyzer built using Streamlit and Gemini AI.
 
 ### Hero Section
 
-![Hero Section](screenshots/hero-section.png)
+![Hero Section][def3]
 
 ---
 
 ### Resume Analysis Output
 
-![Resume Analysis](screenshots/resume-analysis-output.png)
+![Resume Analysis][def2]
 
 ---
 
 ### Recommendations Panel
 
-![Recommendations](screenshots/recommendations-panel.png)
+
+### Home Page
+![Hero Section][def3]
+
+### Resume Analysis
+![Resume Analysis][def2]
+
+### Recommendations
+
+![Recommendations][def]
 
 ---
 
@@ -68,3 +77,8 @@ https://www.linkedin.com/in/aakif-makrani-6634a9230/
 
 - GitHub:
 https://github.com/aakifmakrani
+
+
+[def]: screenshots/recommendations-panel.png
+[def2]: screenshots/resume-analysis-output.png
+[def3]: screenshots/hero-section.png
