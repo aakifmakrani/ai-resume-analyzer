@@ -25,15 +25,22 @@ An AI-powered ATS Resume Analyzer built using Streamlit and Gemini AI.
 
 ---
 
-## 📸 Screenshots
+## 📸 S## Screenshots
 
-### Home Page
+### Hero Section
+
 ![Hero Section](screenshots/hero-section.png)
 
-### Resume Analysis
+---
+
+### Resume Analysis Output
+
 ![Resume Analysis](screenshots/resume-analysis-output.png)
 
-### Recommendations
+---
+
+### Recommendations Panel
+
 ![Recommendations](screenshots/recommendations-panel.png)
 
 ---
